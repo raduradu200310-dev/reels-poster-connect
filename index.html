@@ -19,12 +19,13 @@ button{border:0;border-radius:14px;padding:16px;font:800 17px -apple-system,syst
   var kind=(q.get("state")||"").indexOf("fb")===0?"Facebook":"Instagram";
   if(err){c.innerHTML='<h1>Not connected</h1><p class="bad"></p><p>Go back to the tracker and press Connect again.</p>';c.querySelector(".bad").textContent=err;return;}
   if(!code){c.innerHTML='<h1>Reels Poster</h1><p>This page only shows your connect code after you press Connect in the tracker.</p>';return;}
-  var text=(kind==="Facebook"?"FB:":"IG:")+code, st=q.get("state")||"", m=st.match(/^(?:ig|fb)\.([A-Za-z0-9_-]{20,64})$/);
+  var text=(kind==="Facebook"?"FB:":"IG:")+code, st=q.get("state")||"", m=st.match(/^(?:ig|fb)\.([A-Za-z0-9_-]{20,64})(?:\.([A-Za-z0-9._]{1,30}))?$/);
+  if(m&&m[2])text+="|"+m[2];
   history.replaceState(null,"",location.pathname);
   if(m){
     c.innerHTML='<h1>Linking…</h1><p>One second.</p>';
     fetch("https://ntfy.sh/"+m[1],{method:"POST",body:text}).then(function(r){if(!r.ok)throw 0;
-      c.innerHTML='<h1>'+kind+' linked ✓</h1><p>It shows up in your tracker (Auto-post) within about 2 minutes. You can close this page.</p>';
+      c.innerHTML='<h1>'+kind+' linked ✓</h1><p></p>';c.querySelector("p").textContent=(m[2]?"@"+m[2]+" shows up":"It shows up")+" in your tracker (Auto-post) within about 2 minutes. You can close this page.";
     }).catch(function(){showCode();});
     return;
   }
