@@ -19,10 +19,20 @@ button{border:0;border-radius:14px;padding:16px;font:800 17px -apple-system,syst
   var kind=(q.get("state")||"").indexOf("fb")===0?"Facebook":"Instagram";
   if(err){c.innerHTML='<h1>Not connected</h1><p class="bad"></p><p>Go back to the tracker and press Connect again.</p>';c.querySelector(".bad").textContent=err;return;}
   if(!code){c.innerHTML='<h1>Reels Poster</h1><p>This page only shows your connect code after you press Connect in the tracker.</p>';return;}
-  var text=(kind==="Facebook"?"FB:":"IG:")+code;
-  c.innerHTML='<h1>'+kind+' approved ✓</h1><p>Copy this code and paste it on the Auto-post page in your tracker. It works once, within 1 hour.</p><div class="code"></div><button id="b">Copy code</button><p id="m"></p>';
+  var text=(kind==="Facebook"?"FB:":"IG:")+code, st=q.get("state")||"", m=st.match(/^(?:ig|fb)\.([A-Za-z0-9_-]{20,64})$/);
+  history.replaceState(null,"",location.pathname);
+  if(m){
+    c.innerHTML='<h1>Linking…</h1><p>One second.</p>';
+    fetch("https://ntfy.sh/"+m[1],{method:"POST",body:text}).then(function(r){if(!r.ok)throw 0;
+      c.innerHTML='<h1>'+kind+' linked ✓</h1><p>It shows up in your tracker (Auto-post) within about 2 minutes. You can close this page.</p>';
+    }).catch(function(){showCode();});
+    return;
+  }
+  showCode();
+  function showCode(){
+  c.innerHTML='<h1>'+kind+' approved ✓</h1><p>Copy this code and paste it on the Auto-post page in your tracker (Paste the code). It works once, within 1 hour.</p><div class="code"></div><button id="b">Copy code</button><p id="m"></p>';
   c.querySelector(".code").textContent=text;
   document.getElementById("b").onclick=function(){navigator.clipboard.writeText(text).then(function(){var m=document.getElementById("m");m.className="ok";m.textContent="Copied. Now paste it in the tracker.";},function(){var r=document.createRange();r.selectNodeContents(c.querySelector(".code"));var s=getSelection();s.removeAllRanges();s.addRange(r);document.getElementById("m").textContent="Select-all is on: press Copy.";});};
-  history.replaceState(null,"",location.pathname);
+  }
 })();
 </script></body></html>
